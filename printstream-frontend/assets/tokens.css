@@ -1,0 +1,71 @@
+/* ═══════════════════════════════════════════════════════════════════
+   印花集 · PRINTSTREAM 设计令牌（开箱即用版）
+   ─────────────────────────────────────────────────────────────────────
+   纸与墨是主色，彩色只在虹带。数值来自参考图像素统计，不是肉眼估。
+   用法：<link rel="stylesheet" href="tokens.css">，然后所有组件只吃变量。
+   完整规范见 references/design-tokens.md；母题代码见 references/motifs.md。
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── 纸与墨 ── */
+  --ps-paper:      #f4f6f9;
+  --ps-paper2:     #eaeef3;
+  --ps-ink:        #0d1117;
+  --ps-ink-soft:   #5b6774;
+  --ps-line:       #0d1117;   /* 线就是墨本身，不是浅灰 */
+  --ps-line-soft:  #c3ccd8;
+  --ps-ink-rgb:    13,17,23;
+
+  /* ── 虹带三色（全页唯一彩色元素） ── */
+  --ps-iridescent-from: #f8a8a0;
+  --ps-iridescent-mid:  #f088f0;
+  --ps-iridescent-to:   #20e0e0;
+
+  /* ── accent 双角色：文字/边框用深色，装饰用亮色，别混用 ──
+     默认借用电光蓝；换品牌时只改这两个值 */
+  --ps-accent-text: #0a6fb0;
+  --ps-accent-dec:  #0b9bf0;
+  --ps-accent-dec-rgb: 11,155,240;
+
+  /* ── 功能三态：纸底上必须可读，一律深一档 ── */
+  --ps-ok:   #0e9f6e;
+  --ps-warn: #a86f08;
+  --ps-bad:  #d23a40;
+  --ps-ok-rgb:   14,159,110;
+  --ps-warn-rgb: 168,111,8;
+  --ps-bad-rgb:  210,58,64;
+
+  /* ── 形状 ── */
+  --ps-radius: 0;
+  --ps-border: 2px solid var(--ps-ink);
+  --ps-shadow-hard:    3px 3px 0 var(--ps-ink);
+  --ps-shadow-hard-sm: 2px 2px 0 var(--ps-ink);
+  --ps-shadow-none:    none;
+
+  /* ── 字体栈 ── */
+  --ps-font-display: 'Saira Stencil One', 'Noto Sans SC', sans-serif;
+  --ps-font-cond:    'Saira Condensed', 'Teko', 'Oswald', 'Noto Sans SC', sans-serif;
+  --ps-font-mono:    'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
+  --ps-font-body:    'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* ── 反相分区专用（独立命名，绝不与上面互指 —— 见 rules §6） ── */
+.ps-invert{
+  --inv-bg:   #0d1117;
+  --inv-fg:   #f4f6f9;
+  --inv-line: #f4f6f9;
+  --inv-soft: #3b444f;
+  --inv-dim:  #9aa5b1;
+}
+
+/* ── 字体加载（OFL，随包分发需带 assets/fonts/OFL.txt） ── */
+@font-face{font-family:'Saira Stencil One';src:url('fonts/sairastencilone_0.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Saira Condensed';src:url('fonts/sairacondensed.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Teko';src:url('fonts/teko.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Oswald';src:url('fonts/oswald.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Bebas Neue';src:url('fonts/bebasneue.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Archivo';src:url('fonts/archivo.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Chakra Petch';src:url('fonts/chakrapetch.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'JetBrains Mono';src:url('fonts/jetbrainsmono.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Space Mono';src:url('fonts/spacemono.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Noto Sans SC';src:url('fonts/notosanssc.ttf') format('truetype');font-display:swap}

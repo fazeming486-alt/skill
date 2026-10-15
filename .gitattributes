@@ -1,0 +1,6 @@
+# 文本统一 LF，二进制不碰
+* text=auto eol=lf
+*.ttf binary
+*.png binary
+*.jpg binary
+*.zip binary

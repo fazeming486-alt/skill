@@ -1,0 +1,15 @@
+# OS 垃圾
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 分发产物不进库（需要时用 package_skill.py 现场打）
+*.zip
+
+# 编辑器
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc

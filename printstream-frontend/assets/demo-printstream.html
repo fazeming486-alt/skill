@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>印花集 · PRINTSTREAM 演示控制台</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   印花集演示页 —— 9 个母题全部落地的样板。
+   页面结构即用法：每个母题在第一次出现处有 ①~⑨ 注释。
+   生产代码见 references/motifs.md；本文件是"做出来应该是什么样"。
+   ═══════════════════════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0}
+body{
+  background:var(--ps-paper);color:var(--ps-ink);
+  font:13px/1.55 var(--ps-font-body);
+  -webkit-text-size-adjust:100%;
+}
+/* 纸面三件套：墨点阵(22px 交错) + 细网格(44px) + 两团淡光 */
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(rgba(13,17,23,.055) 1px,transparent 1.6px),
+    radial-gradient(60% 42% at 12% -6%,rgba(11,155,240,.10),transparent 62%),
+    radial-gradient(52% 38% at 88% -2%,rgba(13,17,23,.05),transparent 60%),
+    linear-gradient(rgba(13,17,23,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(13,17,23,.028) 1px,transparent 1px),
+    var(--ps-paper);
+  background-size:22px 22px,auto,auto,44px 44px,44px 44px,auto;
+}
+::selection{background:rgba(11,155,240,.28)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 40px}
+
+/* ── 页头 ── */
+header{
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  padding:22px 20px 12px;max-width:1180px;margin:0 auto;
+}
+header h1{
+  font-family:var(--ps-font-display);font-size:26px;letter-spacing:.06em;
+  display:flex;align-items:center;gap:12px;
+}
+header .sub{font-size:11px;font-weight:600;letter-spacing:.18em;color:var(--ps-ink-soft)}
+header .thm{
+  margin-left:auto;font:inherit;font-size:11px;font-weight:700;letter-spacing:.08em;
+  background:var(--ps-paper);border:2px solid var(--ps-ink);border-radius:0;
+  box-shadow:var(--ps-shadow-hard-sm);padding:6px 12px;cursor:pointer;
+}
+header .thm:active{transform:translate(2px,2px);box-shadow:none}
+
+/* ── 品牌带：⑧图标三连 + stencil 标题 + 读数小格 + ⑤虹带底线 ── */
+.brandband{
+  position:relative;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:var(--ps-paper2);border-bottom:2px solid var(--ps-ink);
+  padding:10px 20px;font-size:12px;
+}
+.brandband .bb-file{font-size:10px;letter-spacing:.16em;color:var(--ps-ink-soft)}
+.brandband .bb-title{font-family:var(--ps-font-display);font-size:15px;letter-spacing:.12em}
+.brandband .bb-reads{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.brandband .bb-r{
+  border:2px solid var(--ps-ink);background:var(--ps-paper);
+  padding:3px 12px 4px;text-align:center;min-width:64px;color:var(--ps-ink-soft);
+}
+.brandband .bb-r b{display:block;font-family:var(--ps-font-mono);font-size:16px;color:var(--ps-ink)}
+.brandband .bb-r em{display:block;font-size:10px;font-style:normal;letter-spacing:.08em}
+/* ⑤ 虹带：全页唯一全宽彩色，3px，11 停靠点（参考图实测两周期） */
+.brandband::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:3px;
+  background:linear-gradient(90deg,
+    #ff4f9a 0%,#ff9a8f 9%,#e6d9c9 17%,#3de8ff 27%,
+    #f45cf0 38%,#b09ae0 47%,#4cc0e4 55%,#3de8ff 63%,
+    #e6d9c9 72%,#ff9a8f 82%,#ff4f9a 100%);
+}
+
+/* ── ⑧ 图标三连：中空圆 / 斜杠圆 / 小方块 ── */
+.ptrio{display:inline-flex;gap:5px;align-items:center;pointer-events:none}
+.ptrio i{display:block;width:11px;height:11px;border:2px solid var(--ps-ink)}
+.ptrio i:nth-child(1){border-radius:50%}
+.ptrio i:nth-child(2){border-radius:50%;
+  background:linear-gradient(45deg,transparent 44%,var(--ps-ink) 44% 56%,transparent 56%)}
+.ptrio i:nth-child(3){border-radius:0}
+
+/* ── 分区标题：② X 阶梯标尺 + ④ 粗黑条三连 ── */
+h2{
+  font-family:var(--ps-font-cond);font-size:17px;font-weight:800;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ps-ink);
+  display:flex;align-items:center;gap:10px;margin:26px 0 12px;
+}
+h2 .xladder{display:inline-flex;gap:2px;align-items:center}
+h2 .xladder svg{width:16px;height:16px;color:var(--ps-ink)}
+h2 .xladder svg:nth-child(2){opacity:.8}
+h2 .xladder svg:nth-child(3){opacity:.55;fill:none;stroke:currentColor;stroke-width:1.4}
+h2 .xladder svg:nth-child(4){opacity:.35;fill:none;stroke:currentColor;stroke-width:1.4;stroke-dasharray:3 3}
+h2 .thickbars{                       /* ④ 粗黑条三连：26/13/10 递减 */
+  width:58px;height:8px;flex:0 0 auto;margin-left:auto;
+  background:
+    linear-gradient(var(--ps-ink),var(--ps-ink)) 0 0/26px 8px no-repeat,
+    linear-gradient(var(--ps-ink),var(--ps-ink)) 31px 0/13px 8px no-repeat,
+    linear-gradient(var(--ps-ink),var(--ps-ink)) 48px 2px/10px 4px no-repeat;
+}
+
+/* ── 总览行：② 大×（全页只此一枚）+ 统计卡 ── */
+.ov{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.ov .bigx{color:var(--ps-ink);flex:0 0 auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;flex:1;min-width:280px}
+/* ── 统计卡：直角墨框 + ③ 底部条码梯尺 ── */
+.stat{
+  position:relative;border:2px solid var(--ps-ink);background:var(--ps-paper);
+  padding:9px 11px 16px;
+}
+.stat .k{font-size:10px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ps-ink-soft)}
+.stat .v{font-family:var(--ps-font-mono);font-size:26px;font-weight:800;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.15}
+.stat .v small{font-size:12px;font-weight:600;color:var(--ps-ink-soft)}
+.stat .v.ok{color:var(--ps-ok)} .stat .v.warn{color:var(--ps-warn)}
+.stat .v.bad{color:var(--ps-bad)}
+.stat::after{                       /* ③ 印刷梯尺：6px 等距墨线 */
+  content:'';position:absolute;left:11px;right:11px;bottom:6px;height:5px;
+  background:repeating-linear-gradient(90deg,var(--ps-ink) 0 1px,transparent 1px 4px);
+  opacity:.85;
+}
+
+/* ── ① 面板：白纸 + 墨框 + 四角定位标 [+·] ── */
+.panel{position:relative;background:var(--ps-paper);
+  border:2px solid var(--ps-ink);border-radius:0;box-shadow:none;
+  padding:12px 14px;margin-top:12px}
+.panel::before,.panel::after{
+  content:'';position:absolute;width:13px;height:13px;pointer-events:none;
+}
+.panel::before{left:4px;top:4px;
+  border-left:2px solid var(--ps-ink);border-top:2px solid var(--ps-ink)}
+.panel::after{right:4px;bottom:4px;
+  border-right:2px solid var(--ps-ink);border-bottom:2px solid var(--ps-ink)}
+.panel h3{font-size:10px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ps-ink-soft);margin-bottom:8px}
+
+/* ── 控件行 ── */
+.ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{
+  font:inherit;font-weight:700;letter-spacing:.06em;font-size:12px;
+  background:var(--ps-paper);color:var(--ps-ink);
+  border:2px solid var(--ps-ink);border-radius:0;
+  box-shadow:var(--ps-shadow-hard-sm);padding:5px 12px;cursor:pointer;
+  transition:transform .1s steps(2,end),box-shadow .1s steps(2,end);
+}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ps-ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn.on{background:var(--ps-ink);color:var(--ps-paper);border-color:var(--ps-ink);
+  box-shadow:2px 2px 0 var(--ps-accent-text)}
+.btn.danger{background:var(--ps-bad);color:#fff;border-color:var(--ps-ink)}
+.btn:focus-visible,select:focus-visible,input:focus-visible{
+  outline:2px solid var(--ps-accent-text);outline-offset:3px}
+select,input{
+  font:inherit;font-size:12px;background:var(--ps-paper);color:var(--ps-ink);
+  border:2px solid var(--ps-ink);border-radius:0;padding:4px 8px;max-width:100%;
+}
+input[type=range]{-webkit-appearance:none;appearance:none;border:none;
+  background:transparent;height:22px;padding:0;width:160px}
+input[type=range]::-webkit-slider-runnable-track{height:8px;background:var(--ps-ink)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;
+  background:var(--ps-paper);border:2px solid var(--ps-ink);margin-top:-6px;
+  box-shadow:2px 2px 0 var(--ps-ink)}
+
+/* ── 表格：墨框 + 点线行 + thead 上 ③ 条码 ── */
+.tablewrap{margin-top:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:var(--ps-paper);
+  border:2px solid var(--ps-ink);min-width:640px}
+thead th{
+  background:var(--ps-paper2);border-bottom:2px solid var(--ps-ink);
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:6px 10px;text-align:left;position:relative;
+}
+thead th::after{                    /* ③ 密度条码：贴在 thead 上沿，不占高度 */
+  content:'';position:absolute;left:0;right:0;top:0;height:4px;opacity:.18;
+  background:
+    repeating-linear-gradient(90deg,var(--ps-ink) 0 1px,transparent 1px 4px),
+    repeating-linear-gradient(90deg,var(--ps-ink) 0 1px,transparent 1px 3px);
+  background-size:100% 60%,100% 100%;background-position:0 100%,0 0;
+  background-repeat:no-repeat;
+}
+td{padding:6px 10px;border-bottom:1px solid var(--ps-line-soft);font-size:12px}
+tbody tr{border-bottom:1px dashed var(--ps-line-soft)}  /* 行线是点线 */
+tbody tr:last-child{border-bottom:0}
+tbody tr:hover{background:rgba(11,155,240,.08)}
+tbody tr.watching td:first-child{box-shadow:inset 4px 0 0 var(--ps-ink)}
+.num{font-family:var(--ps-font-mono);font-variant-numeric:tabular-nums}
+.tag{display:inline-block;border:1.5px solid var(--ps-ink);background:var(--ps-paper2);
+  font-size:10px;font-weight:700;letter-spacing:.06em;padding:1px 6px;border-radius:0}
+.tag.ok{color:var(--ps-ok);border-color:var(--ps-ok)}
+.tag.bad{color:var(--ps-bad);border-color:var(--ps-bad)}
+
+/* ── 墨色进度条：实心推进 + 每 10% 一刻度 ── */
+.prog{position:relative;height:26px;border:2px solid var(--ps-ink);
+  background:var(--ps-paper2);overflow:hidden;margin-top:4px}
+.prog .fill{position:absolute;top:1px;bottom:1px;left:1px;width:62%;background:var(--ps-ink)}
+.prog .ticks{position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),
+    var(--ps-paper) calc(10% - 1px) 10%)}
+.prog .txt{position:absolute;inset:0;display:flex;justify-content:space-between;
+  align-items:center;padding:0 8px;font-size:11px;font-weight:700;
+  font-variant-numeric:tabular-nums;mix-blend-mode:difference;color:#fff}
+
+/* ── ⑦ 空状态：虚线半圆弧（中性淡墨，绝不染红） ── */
+.empty{display:flex;align-items:center;gap:9px;color:var(--ps-ink-soft);
+  font-weight:600;padding:14px 2px}
+.empty .arc{
+  display:inline-block;width:30px;height:15px;flex:0 0 auto;
+  border:2px dashed var(--ps-ink-soft);border-radius:30px 30px 0 0;border-bottom:none;
+}
+
+/* ── ⑨ 黑白反相分区：只给高危区 ── */
+.invert{
+  --inv-bg:#0d1117; --inv-fg:#f4f6f9; --inv-line:#f4f6f9;
+  --inv-soft:#3b444f; --inv-dim:#9aa5b1;
+  position:relative;margin-top:16px;
+  background:var(--inv-bg);color:var(--inv-fg);
+  border:2px solid var(--inv-line);
+  box-shadow:6px 6px 0 var(--ps-accent-text);
+  padding:14px 16px 48px;             /* 底部给 ⑥ 菱形簇留位 */
+}
+.invert h3{color:var(--inv-dim)}
+.invert::before,.invert::after{        /* ① 反相区角标翻转成纸色 */
+  content:'';position:absolute;width:13px;height:13px;pointer-events:none;
+}
+.invert::before{left:4px;top:4px;
+  border-left:2px solid var(--inv-line);border-top:2px solid var(--inv-line)}
+.invert::after{right:4px;bottom:4px;
+  border-right:2px solid var(--inv-line);border-bottom:2px solid var(--inv-line)}
+.invert .warnline{
+  border-left:8px solid var(--ps-bad);background:rgba(210,58,64,.22);
+  padding:8px 12px;font-weight:600;font-size:12px;margin-top:8px;
+}
+.invert .btn{background:var(--inv-fg);color:var(--inv-bg);border-color:var(--inv-bg);
+  box-shadow:2px 2px 0 var(--inv-line)}
+.invert .btn:hover{box-shadow:3px 3px 0 var(--inv-line)}
+/* ⑥ 点阵菱形簇：只落反相区右下角留白处 */
+.invert .diamonds{
+  position:absolute;right:16px;bottom:12px;width:46px;height:46px;
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;
+}
+.invert .diamonds i{width:70%;height:70%;background:var(--inv-fg);transform:rotate(45deg)}
+.invert .diamonds i:nth-child(1),.invert .diamonds i:nth-child(3),
+.invert .diamonds i:nth-child(7),.invert .diamonds i:nth-child(9){opacity:.3}
+.invert .diamonds i:nth-child(2),.invert .diamonds i:nth-child(4),
+.invert .diamonds i:nth-child(6),.invert .diamonds i:nth-child(8){opacity:.6}
+.invert .diamonds i:nth-child(5){opacity:1}
+
+/* ── 页脚印章：HANDLE_WITH_CARE; + 斜杠组 ── */
+.stamp{
+  display:flex;align-items:center;gap:9px;margin-top:36px;padding-top:10px;
+  border-top:1px solid rgba(13,17,23,.35);
+  font-family:var(--ps-font-mono);font-size:10px;font-weight:700;
+  letter-spacing:.16em;color:var(--ps-ink);
+}
+.stamp .slashes{width:14px;height:12px;flex:0 0 auto;background:
+  linear-gradient(45deg,transparent 42%,var(--ps-ink) 42% 58%,transparent 58%) 0 0/5px 12px no-repeat,
+  linear-gradient(45deg,transparent 42%,var(--ps-ink) 42% 58%,transparent 58%) 4px 0/5px 12px no-repeat,
+  linear-gradient(45deg,transparent 42%,var(--ps-ink) 42% 58%,transparent 58%) 8px 0/5px 12px no-repeat}
+.stamp .right{margin-left:auto;color:var(--ps-ink-soft);letter-spacing:.12em}
+
+@media (max-width:620px){
+  header h1{font-size:20px}
+  .ov .bigx svg{width:48px;height:48px}
+  .invert{padding-bottom:56px}
+}
+</style>
+</head>
+<body>
+
+<!-- ② X 符号定义：一条路径出实心/描边/虚线三种形态 -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="ps-x" viewBox="0 0 24 24">
+    <path d="M4 4 L9.4 4 L12 8.4 L14.6 4 L20 4 L14.8 12 L20 20 L14.6 20
+             L12 15.6 L9.4 20 L4 20 L9.2 12 Z"/>
+  </symbol>
+</svg>
+
+<header>
+  <h1><span class="ptrio" aria-hidden="true"><i></i><i></i><i></i></span>WIFI 刺客</h1>
+  <span class="sub">PRINTSTREAM · 双频审计控制台</span>
+  <button class="thm">主题 · 印花集</button>
+</header>
+
+<!-- 品牌带：档案号 + stencil 标题 + 读数小格 + ⑤ 虹带底线 -->
+<div class="brandband">
+  <span class="bb-file">FILE _B42;</span>
+  <span class="ptrio" aria-hidden="true"><i></i><i></i><i></i></span>
+  <span class="bb-title">PRINTSTREAM</span>
+  <div class="bb-reads">
+    <span class="bb-r"><b>2.4G</b><em>+ 5G</em></span>
+    <span class="bb-r"><b>18,625</b><em>行 C/H</em></span>
+    <span class="bb-r"><b>OFFLINE</b><em>全程离线</em></span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 总览：② 大×（全页只此一枚）+ 统计卡 -->
+  <div class="ov">
+    <span class="bigx" aria-hidden="true">
+      <svg width="66" height="66" viewBox="0 0 24 24" fill="currentColor"><use href="#ps-x"/></svg>
+    </span>
+    <div class="stats">
+      <div class="stat"><div class="k">在线AP</div><div class="v">47 <small>个</small></div></div>
+      <div class="stat"><div class="k">扫描吞吐</div><div class="v">312 <small>pkt/s</small></div></div>
+      <div class="stat"><div class="k">可疑信标</div><div class="v warn">3 <small>个</small></div></div>
+      <div class="stat"><div class="k">运行时长</div><div class="v ok">04:12:37</div></div>
+    </div>
+  </div>
+
+  <!-- 控制面板：① 四角定位标 -->
+  <h2>扫描控制
+    <span class="xladder" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="currentColor"><use href="#ps-x"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor"><use href="#ps-x"/></svg>
+      <svg viewBox="0 0 24 24"><use href="#ps-x"/></svg>
+      <svg viewBox="0 0 24 24" stroke-dasharray="3 3"><use href="#ps-x"/></svg>
+    </span>
+    <span class="thickbars" aria-hidden="true"></span>
+  </h2>
+  <div class="panel">
+    <h3>通道与驻留</h3>
+    <div class="ctl">
+      <button class="btn on">全频段</button>
+      <button class="btn">2.4G</button>
+      <button class="btn">5G</button>
+      <select><option>驻留 120ms</option><option>驻留 240ms</option></select>
+      <input type="range" min="0" max="100" value="62" aria-label="驻留比例">
+      <button class="btn danger">停止</button>
+    </div>
+    <div class="prog" role="progressbar" aria-valuenow="62">
+      <div class="fill"></div><div class="ticks"></div>
+      <div class="txt"><span>扫描进度</span><span>62/100</span></div>
+    </div>
+  </div>
+
+  <!-- 结果表：点线行 + thead 条码 + 关注行墨条 -->
+  <h2>扫描结果<span class="thickbars" aria-hidden="true"></span></h2>
+  <div class="panel">
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>SSID</th><th>BSSID</th><th>信道</th><th>信号</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr class="watching"><td>C5-AUDIT-01</td><td class="num">9C:9C:1F:0A:42:01</td><td class="num">6</td><td class="num">-41dBm</td><td><span class="tag ok">已锁定</span></td></tr>
+          <tr><td>TP-LINK_A42F</td><td class="num">9C:9C:1F:0A:42:02</td><td class="num">11</td><td class="num">-58dBm</td><td><span class="tag">普通</span></td></tr>
+          <tr><td>×××Y</td><td class="num">9C:9C:1F:0A:42:03</td><td class="num">36</td><td class="num">-67dBm</td><td><span class="tag bad">可疑</span></td></tr>
+          <tr><td>HANDLE_WITH_CARE;</td><td class="num">9C:9C:1F:0A:42:04</td><td class="num">149</td><td class="num">-73dBm</td><td><span class="tag">普通</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 空状态：⑦ 虚线半圆弧 -->
+  <div class="panel">
+    <h3>握手捕获</h3>
+    <div class="empty"><span class="arc" aria-hidden="true"></span>等待四次握手 —— 空状态不是失败，不染红。</div>
+  </div>
+
+  <!-- ⑨ 反相高危区 + ⑥ 菱形簇 -->
+  <div class="invert">
+    <h3>主动测试 · 高危区（黑白反相分区）</h3>
+    <div style="font-size:12px;color:var(--inv-dim);margin-top:4px">
+      反相只改容器配色，ok/idl/bad 三态判定一个字不动。
+    </div>
+    <div class="warnline">该区域会发射射频 —— 仅在授权范围内启用。</div>
+    <div class="ctl" style="margin-top:10px">
+      <button class="btn">Beacon 泛洪</button>
+      <button class="btn">伪造 AP</button>
+      <input placeholder="目标 BSSID" aria-label="目标 BSSID">
+    </div>
+    <div class="diamonds" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+
+  <!-- 页脚印章：槽位文本 编号; / 署名; -->
+  <div class="stamp">
+    <span class="slashes" aria-hidden="true"></span>
+    HANDLE_WITH_CARE;
+    <span class="right">DESIGN BY WyHXnR; · _B42;</span>
+  </div>
+
+</div>
+</body>
+</html>
